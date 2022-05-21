@@ -13,31 +13,25 @@
     const VISIBILITY = 'Public'; // 'Public' / 'Private' / 'Unlisted'
 
     // ADDITIONAL CONFIG
-    const YOUTUBE_LANGUAGE = 'RU'; // RU / ENG
     const PLAN_PUBLISH = true; // true / false
+    const YOUTUBE_LANGUAGE = 'RU'; // 'RU' / 'ENG(US)' / 'ENG(UK)'
     const PLAN_DATE_RANGE = {
         startDate: {
-            day: 20,        // It's better to set plan date to next day after today (example: today is 19, better to set 20)
-            month: 1,        // Or if you want make it today, make sure to put correct time range or will be errors
+            day: 22,        // If you want make it today, make sure to put correct time range or will be errors
+            month: 9,
             year: 2023
-        },                   // Change values to exist values
-        endDate: {           // If random generated date would be beyond youtube limitations, the plan date would be set by default
-            day: 22,
-            month: 3,
-            year: 2024       // 2 YEARS maximum limit in YOUTUBE
-        }
-    };
-    const PLAN_TIME_RANGE = {
-        startTime: {
-            hour: 15,     // 0, 1, 2, 3..., 23
-            minutes: 15   // 0, 15, 30, 45
         },
-        endTime: {
-            hour: 18,
-            minutes: 31
+        endDate: {           // If random generated date would be beyond youtube limitations, the plan date would be set by default(tomorrow or today)
+            day: 25,
+            month: 9,
+            year: 2023       // 2 YEARS maximum limit in YOUTUBE
         }
     };
-    const PLAN_TIMEZONE = '(GMT-08:00) Анкоридж';
+    const PLAN_TIME_RANGE = {    //"00:00","00:15","00:30","00:45","01:00","01:15","01:30","01:45","02:00","02:15","02:30","02:45","03:00","03:15","03:30","03:45","04:00","04:15","04:30","04:45","05:00","05:15","05:30","05:45","06:00","06:15","06:30","06:45","07:00","07:15","07:30","07:45","08:00","08:15","08:30","08:45","09:00","09:15","09:30","09:45","10:00","10:15","10:30","10:45","11:00","11:15","11:30","11:45","12:00","12:15","12:30","12:45","13:00","13:15","13:30","13:45","14:00","14:15","14:30","14:45","15:00","15:15","15:30","15:45","16:00","16:15","16:30","16:45","17:00","17:15","17:30","17:45","18:00","18:15","18:30","18:45","19:00","19:15","19:30","19:45","20:00","20:15","20:30","20:45","21:00","21:15","21:30","21:45","22:00","22:15","22:30","22:45","23:00","23:15","23:30","23:45"
+        startTime: '23:45',
+        endTime: '01:30'
+    };
+    const PLAN_TIMEZONE = '-07'; // '-01', '+01', ... '-10', '+10', ... '+12:45', '+09:30'
 
 
     // -----------------------------------------------------------------
@@ -53,25 +47,6 @@
     };
     // END OF CONFIG (not safe to edit stuff below)
     // -----------------------------------------------------------------
-
-    // Art by Joan G. Stark
-    // .'"'.        ___,,,___        .'``.
-    // : (\  `."'"```         ```"'"-'  /) ;
-    //  :  \                         `./  .'
-    //   `.                            :.'
-    //     /        _         _        \
-    //    |         0}       {0         |
-    //    |         /         \         |
-    //    |        /           \        |
-    //    |       /             \       |
-    //     \     |      .-.      |     /
-    //      `.   | . . /   \ . . |   .'
-    //        `-._\.'.(     ).'./_.-'
-    //            `\'  `._.'  '/'
-    //              `. --'-- .'
-    //                `-...-'
-
-
 
     // ----------------------------------
     // COMMON  STUFF
@@ -197,7 +172,7 @@
             await sleep(50);
             debugLog("Plan Timezone Btn selected");
             const allTimezoneOptions = await document.querySelectorAll('ytcp-text-menu tp-yt-paper-dialog[id="dialog"] yt-formatted-string');
-            const filteredTimezones = Array.from(allTimezoneOptions).filter(el => el.innerText === PLAN_TIMEZONE);
+            const filteredTimezones = Array.from(allTimezoneOptions).filter(el => el.innerText.includes(PLAN_TIMEZONE));
             if (filteredTimezones.length > 0) {
                 click(filteredTimezones[0]);
             } else {
@@ -215,21 +190,24 @@
             debugLog("Plan Datepicker Btn selected");
             function formatDate(date) {
                 let monthsNamesRu = ['ЯНВ.', 'ФЕВР.', 'МАР.', 'АПР.', 'МАЯ', 'ИЮН.', 'ИЮЛ.', 'АВГ.', 'СЕНТ.', 'ОКТ.', 'НОЯБ.', 'ДЕК.'];
-                let monthsNamesEng = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
-                if (YOUTUBE_LANGUAGE === 'ENG') {
-                    return `${monthsNamesEng[date.getMonth()]} ${date.getFullYear()}`
+                let monthsNamesEngUs = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+                let monthsNamesEngUk = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sept", "Oct", "Nov", "Dec"];
+                if (YOUTUBE_LANGUAGE === 'ENG(US)') {
+                    return `${monthsNamesEngUs[date.getMonth()]} ${date.getFullYear()}`
+                } else if (YOUTUBE_LANGUAGE === 'ENG(UK)') {
+                    return `${monthsNamesEngUk[date.getMonth()]} ${date.getFullYear()}`
                 } else {
                     return `${monthsNamesRu[date.getMonth()]} ${date.getFullYear()}`
                 }
             }
             function randomDate(start, end) { return new Date(start.getTime() + Math.random() * (end.getTime() - start.getTime())) }
-            const RANDOM_GENERATED_DATE = randomDate(new Date(PLAN_DATE_RANGE.startDate.year, PLAN_DATE_RANGE.startDate.month - 1, PLAN_DATE_RANGE.startDate.day), new Date(PLAN_DATE_RANGE.endDate.year, PLAN_DATE_RANGE.endDate.month - 1, PLAN_DATE_RANGE.endDate.day));
+            const RANDOM_GENERATED_DATE = randomDate(new Date(PLAN_DATE_RANGE.startDate.year, PLAN_DATE_RANGE.startDate.month - 1, PLAN_DATE_RANGE.startDate.day), new Date(PLAN_DATE_RANGE.endDate.year, PLAN_DATE_RANGE.endDate.month - 1, PLAN_DATE_RANGE.endDate.day + 1));
             let newFormattedDate = formatDate(RANDOM_GENERATED_DATE);
             debugLog(`Random Date: ${RANDOM_GENERATED_DATE.getDate()} ${newFormattedDate}`);
 
             async function scrollItems(){
                 const dateItemsMonths = document.querySelectorAll('ytcp-date-picker #calendar-main .calendar-month-label');
-                const filtered = Array.from(dateItemsMonths).filter(el => el.innerText === newFormattedDate);
+                const filtered = Array.from(dateItemsMonths).filter(el => el.innerText.toLowerCase() === newFormattedDate.toLowerCase());
                 if (document.querySelector('ytcp-date-picker #calendar-main').scrollTop < 4700) {
                     if (filtered.length > 0) {
                         let parent = filtered[0].parentElement;
@@ -256,38 +234,39 @@
             click(await this.planTimeButton());
             await sleep(50);
             debugLog("Plan Time Btn selected");
+            const timeNamesEng = ["12:00 AM", "12:15 AM", "12:30 AM", "12:45 AM", "1:00 AM", "1:15 AM", "1:30 AM", "1:45 AM", "2:00 AM", "2:15 AM", "2:30 AM", "2:45 AM", "3:00 AM", "3:15 AM", "3:30 AM", "3:45 AM", "4:00 AM", "4:15 AM", "4:30 AM", "4:45 AM", "5:00 AM", "5:15 AM", "5:30 AM", "5:45 AM", "6:00 AM", "6:15 AM", "6:30 AM", "6:45 AM", "7:00 AM", "7:15 AM", "7:30 AM", "7:45 AM", "8:00 AM", "8:15 AM", "8:30 AM", "8:45 AM", "9:00 AM", "9:15 AM", "9:30 AM", "9:45 AM", "10:00 AM", "10:15 AM", "10:30 AM", "10:45 AM", "11:00 AM", "11:15 AM", "11:30 AM", "11:45 AM", "12:00 PM", "12:15 PM", "12:30 PM", "12:45 PM", "1:00 PM", "1:15 PM", "1:30 PM", "1:45 PM", "2:00 PM", "2:15 PM", "2:30 PM", "2:45 PM", "3:00 PM", "3:15 PM", "3:30 PM", "3:45 PM", "4:00 PM", "4:15 PM", "4:30 PM", "4:45 PM", "5:00 PM", "5:15 PM", "5:30 PM", "5:45 PM", "6:00 PM", "6:15 PM", "6:30 PM", "6:45 PM", "7:00 PM", "7:15 PM", "7:30 PM", "7:45 PM", "8:00 PM", "8:15 PM", "8:30 PM", "8:45 PM", "9:00 PM", "9:15 PM", "9:30 PM", "9:45 PM", "10:00 PM", "10:15 PM", "10:30 PM", "10:45 PM", "11:00 PM", "11:15 PM", "11:30 PM", "11:45 PM"];
+            const timesNamesRu = ["00:00","00:15","00:30","00:45","01:00","01:15","01:30","01:45","02:00","02:15","02:30","02:45","03:00","03:15","03:30","03:45","04:00","04:15","04:30","04:45","05:00","05:15","05:30","05:45","06:00","06:15","06:30","06:45","07:00","07:15","07:30","07:45","08:00","08:15","08:30","08:45","09:00","09:15","09:30","09:45","10:00","10:15","10:30","10:45","11:00","11:15","11:30","11:45","12:00","12:15","12:30","12:45","13:00","13:15","13:30","13:45","14:00","14:15","14:30","14:45","15:00","15:15","15:30","15:45","16:00","16:15","16:30","16:45","17:00","17:15","17:30","17:45","18:00","18:15","18:30","18:45","19:00","19:15","19:30","19:45","20:00","20:15","20:30","20:45","21:00","21:15","21:30","21:45","22:00","22:15","22:30","22:45","23:00","23:15","23:30","23:45"];
 
-            function padTo2Digits(num) {
-                return num.toString().padStart(2, '0');
-            }
-            var startTime = `2022-08-10 ${padTo2Digits(PLAN_TIME_RANGE.startTime.hour)}:${padTo2Digits(PLAN_TIME_RANGE.startTime.minutes)}:00`;
-            var endTime = `2022-08-10 ${padTo2Digits(PLAN_TIME_RANGE.endTime.hour)}:${padTo2Digits(PLAN_TIME_RANGE.endTime.minutes)}:00`;
-            var parseIn = function(date_time){
-                var d = new Date();
-                d.setHours(date_time.substring(11,13));
-                d.setMinutes(date_time.substring(14,16));
-
-                return d;
-            };
-            var getTimeIntervals = function (time1, time2) {
-                var arr = [];
-                while(time1 < time2){
-                    arr.push(time1.toTimeString().substring(0,5));
-                    time1.setMinutes(time1.getMinutes() + 15);
+            function getRandomTime(startTime, endTime) {
+                let startKey = timesNamesRu.indexOf(startTime);
+                let endKey = timesNamesRu.indexOf(endTime);
+                if (startKey === -1 || endKey === -1) {
+                    return '';
+                } else {
+                    let rangeArr = [];
+                    if (endKey < startKey) {
+                        rangeArr = [...timesNamesRu.slice(startKey), ...timesNamesRu.slice(0, endKey + 1)]
+                    } else {
+                        rangeArr = timesNamesRu.slice(startKey, endKey + 1);
+                    }
+                    return rangeArr[Math.floor(Math.random() * rangeArr.length)];
                 }
-                return arr;
-            };
-            startTime = parseIn(startTime);
-            endTime = parseIn(endTime);
-            var intervals = getTimeIntervals(startTime, endTime);
-            const filteringKey = intervals[Math.floor(Math.random() * intervals.length)];
+            }
+            let filteringKey = getRandomTime(PLAN_TIME_RANGE.startTime, PLAN_TIME_RANGE.endTime);
 
             debugLog('Random Time:', filteringKey);
-
             const timeListItems = document.querySelectorAll('ytcp-time-of-day-picker tp-yt-paper-item');
-            const filteredTimeItems = Array.from(timeListItems).filter(el => el.innerText === filteringKey);
-            if (filteredTimeItems.length > 0) {
-                click(filteredTimeItems[0]);
+            if (filteringKey || timesNamesRu.indexOf(filteringKey) !== -1) {
+                let filteredTimeItems = Array.from(timeListItems).filter(el => el.innerText === filteringKey);
+                if (YOUTUBE_LANGUAGE === 'ENG(US)') {
+                    filteredTimeItems = Array.from(timeListItems).filter(el => el.innerText === timeNamesEng[timesNamesRu.indexOf(filteringKey)]);
+                }
+                if (filteredTimeItems.length > 0) {
+                    click(filteredTimeItems[0]);
+                } else {
+                    click(document.querySelector('tp-yt-iron-overlay-backdrop'));
+                    debugLog('Time not found in youtube supported time')
+                }
             } else {
                 click(document.querySelector('tp-yt-iron-overlay-backdrop'));
                 debugLog('Time not found in youtube supported time')
